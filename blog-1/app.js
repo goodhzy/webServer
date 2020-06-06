@@ -47,21 +47,13 @@ const serverHandle = (req, res) => {
   res.setHeader("Content-type", "application/json");
 
   // 设置cors
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:8001");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:8080");
   res.setHeader("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type,Access-Control-Allow-Headers,Authorization,X-Requested-With"
   );
   res.setHeader("Access-Control-Allow-Credentials", "true"); // 允许服务器端发送Cookie数据
-
-  if (req.method === "OPTIONS") {
-    console.log('options');
-    
-    res.writeHead(200);
-    res.end();
-    return;
-  }
 
   // 获取query数据
   req.query = querystring.parse(req.url.split("?")[1]);
@@ -137,6 +129,15 @@ const serverHandle = (req, res) => {
         });
         return;
       }
+
+      if (req.method === "OPTIONS") {
+        console.log('options');
+        
+        res.writeHead(200);
+        res.end();
+        return
+      }
+
       // 未命中路由,返回404
       res.writeHead(404, { "Content-type": "text/plain" });
       res.write("404 NOT FOUND\n");

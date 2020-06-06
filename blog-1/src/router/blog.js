@@ -6,6 +6,7 @@ const {
   delBlog,
 } = require("../controller/blog");
 const { SuccessModel, ErrorModel } = require("../model/resModel");
+const xss  = require('xss')
 
 const handleBlogRouter = (req, res) => {
   const { method, url } = req;
@@ -57,6 +58,8 @@ const handleBlogRouter = (req, res) => {
       };
     console.log(`新建博客, 博客数据为${JSON.stringify(req.body)}`);
     req.body.author = req.session.username;
+    // 防止xss攻击,原理就是给一些字符作转义
+    req.body.title = xss(req.body.title)
     return addBlog(req.body).then((result) => {
       return new SuccessModel(result);
     });
