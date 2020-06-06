@@ -3,6 +3,7 @@ const querystring = require("querystring");
 const handleBlogRouter = require("./src/router/blog");
 const handleUserRouter = require("./src/router/user");
 const { get, set } = require("./src/db/redis");
+const { access } = require("./src/utils/log");
 
 const getPostData = (req) => {
   return new Promise((resolve, reject) => {
@@ -36,15 +37,32 @@ const getCookieExpiress = () => {
 };
 
 const serverHandle = (req, res) => {
+  // 日志
+  // access(
+  //   `${req.method} -- ${req.url} -- ${
+  //     req.headers["user-agent"]
+  //   } -- ${new Date()}`
+  // );
   // 设置返回格式
   res.setHeader("Content-type", "application/json");
 
-  // 设置cors  
+  // 设置cors
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:8001");
-  res.setHeader("Access-Control-Allow-Methods",'PUT,POST,GET,DELETE,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers','Content-Type,Access-Control-Allow-Headers,Authorization,X-Requested-With')
+  res.setHeader("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type,Access-Control-Allow-Headers,Authorization,X-Requested-With"
+  );
   res.setHeader("Access-Control-Allow-Credentials", "true"); // 允许服务器端发送Cookie数据
-  
+
+  if (req.method === "OPTIONS") {
+    console.log('options');
+    
+    res.writeHead(200);
+    res.end();
+    return;
+  }
+
   // 获取query数据
   req.query = querystring.parse(req.url.split("?")[1]);
 
@@ -118,11 +136,6 @@ const serverHandle = (req, res) => {
           res.end(JSON.stringify(userData));
         });
         return;
-      }
-      if(req.method === 'OPTIONS'){
-      res.writeHead(200);
-      res.end();
-        return
       }
       // 未命中路由,返回404
       res.writeHead(404, { "Content-type": "text/plain" });
