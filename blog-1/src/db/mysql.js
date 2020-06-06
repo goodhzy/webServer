@@ -5,7 +5,11 @@ const {MYSQL_CONF} = require('../conf/db')
  const con = mysql.createConnection(MYSQL_CONF)
 
 //  开始连接
-con.connect()
+con.connect((err)=>{
+    if(err){
+        console.error('mysql连接失败: ' + err);
+    }
+})
 
 // 统一执行sql的函数
 function exec(sql){

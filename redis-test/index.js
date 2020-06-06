@@ -1,9 +1,13 @@
 const redis = require('redis')
 
-// 创建客户端连接
-const redisClient = redis.createClient(6379,'127.0.0.1',{
+const REDIS_CONF = {
+    port: 6379,
+    host: '127.0.0.1',
     password: 'root'
-})
+  }
+
+// 创建客户端连接
+const redisClient = redis.createClient(REDIS_CONF)
 redisClient.on('error',err=>{
     console.log('reids连接失败:' + err);
 })

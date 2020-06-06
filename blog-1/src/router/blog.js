@@ -11,11 +11,27 @@ const handleBlogRouter = (req, res) => {
   const { method, url } = req;
   const path = url.split("?")[0];
 
+  // 统一登录验证
+  const loginCheck = (req) => {
+    if (!req.session.username) {
+      return Promise.resolve(new ErrorModel("尚未登录"));
+    }
+  };
+
   // 获取博客列表
   if (method === "GET" && path === "/api/blog/list") {
     // TODO 这里判断有问题,当author为0或者false,筛选不到数据的
-    const author = req.query.author || "";
+    let author = req.query.author || "";
     const keyword = req.query.keyword || "";
+
+    if (req.query.isadmin) {
+      let loginCheckResult = loginCheck(req)
+      if(loginCheckResult){
+          return loginCheckResult
+      }
+      author = req.session.username;
+    }
+
     return getList(author, keyword).then((result) => {
       return new SuccessModel(result);
     });
@@ -35,7 +51,12 @@ const handleBlogRouter = (req, res) => {
 
   // 新建博客
   if (method === "POST" && path === "/api/blog/add") {
+    let loginCheckResult = loginCheck(req)
+      if(loginCheckResult){
+          return loginCheckResult
+      };
     console.log(`新建博客, 博客数据为${JSON.stringify(req.body)}`);
+    req.body.author = req.session.username;
     return addBlog(req.body).then((result) => {
       return new SuccessModel(result);
     });
@@ -43,6 +64,10 @@ const handleBlogRouter = (req, res) => {
 
   // 更新博客
   if (method === "POST" && path === "/api/blog/update") {
+    let loginCheckResult = loginCheck(req)
+      if(loginCheckResult){
+          return loginCheckResult
+      };
     console.log(`更新id为${req.body.id}的博客数据`);
     return updateBlog(req.body).then((result) => {
       if (result) {
@@ -55,8 +80,13 @@ const handleBlogRouter = (req, res) => {
 
   // 删除博客
   if (method === "POST" && path === "/api/blog/del") {
+    let loginCheckResult = loginCheck(req)
+      if(loginCheckResult){
+          return loginCheckResult
+      };
     console.log(`删除id为${req.body.id}的博客数据`);
-    return delBlog(req.body.id).then((result) => {
+    req.body.author = req.session.username;
+    return delBlog(req.body).then((result) => {
       return result ? new SuccessModel("删除成功") : new ErrorModel("删除失败");
     });
   }
